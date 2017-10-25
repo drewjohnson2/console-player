@@ -16,6 +16,7 @@
 | ---------- | ------ |
 | Curses     | You'll need this library because it's how the program makes the displayed information interactive with the                     user. Library should be installed by ```pip3 install ```|
 | Glob | This library is needed to gather all of the filenames for the songs in your path. Library should be installed by ```pip3 install ```|
+| Subprocess | This library handles the music player in the background. Library should be pre-installed with python3 however if it is not library should be installed by ```pip3 install ```
 | afplay | Afplay is a command line audio player that comes built in to most Macs. This is the audio player I chose to use for playing the music so if you don't already have it on your device you'll need to download it.
 | Python 3 | I wrote this program in python 3 so trying to run it with any other version will more than likely give you a real bad time.|
 
