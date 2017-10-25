@@ -21,7 +21,7 @@
 | Python 3 | I wrote this program in python 3 so trying to run it with any other version will more than likely give you a real bad time.|
 
 ## Modification
-You'll need to modify a few lines of the source code to get in working with your system. Below I'll highlight the lines needed to get the player up and running on your system.
+You'll need to modify a few lines of the source code to get the player working with your system. Below I'll highlight the lines needed to get the player up and running on your system.
 
 ### Path for file importing
 On line 17 you'll see <br />
