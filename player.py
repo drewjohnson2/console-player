@@ -19,8 +19,11 @@ prefix = '/Users/drewjohnson/desktop/songs/'       # Prefix to be removed from f
 file=glob.glob(path)                               # Method used for grabbing file names from folder containing MP3's
 file2 = file                                       # List of raw paths to file. Used for playing songs
 files = []                                         # List of edited file names for displaying to user
-message = "Arrow keys: select song - Space Bar: start/stop - esc: exit"   # Printed at bottom of screen
-isRunning = False                                                               
+message = "Arrow keys: select song/change page - Space Bar: start/stop - esc: exit"  # Printed at bottom of screen
+space = "    "
+isRunning = False   
+multiList = []
+playList = []                                                    
 
 #---------------------------------------------------------------#
 # Function for starting audio player subprocess                 #
@@ -28,19 +31,29 @@ isRunning = False
 # row - The current location of cursor.                         #
 #                                                               #
 # proecessList - list of current processes.                     #
+#                                                               #
+# page - current location in multi-dimensional list             #
 #---------------------------------------------------------------#
-
-def playSong(row, processList):
+def playSong(row, processList, page):
     
     if processList[0] == '':                       # Starting first process
-        processList[0] = subprocess.Popen(["afplay", file2[row]])
+        processList[0] = subprocess.Popen(["afplay", playList[page][row]])
     
     elif processList[0].poll() == None:            # If a process is currently running, kill process, start new one
         processList[0].kill()
-        processList[0] = subprocess.Popen(["afplay", file2[row]])
+        processList[0] = subprocess.Popen(["afplay", playList[page][row]])
     
     else:                                          # Otherwise, start a process
-        processList[0] = subprocess.Popen(["afplay", file2[row]])
+        processList[0] = subprocess.Popen(["afplay", playList[page][row]])
+
+#---------------------------------------------------------------#
+# Function behaves as name would suggest.                       #
+# Parameters:                                                   #
+# processList - list of current processes.                      #
+#---------------------------------------------------------------#
+def stopPlaying(processList):
+    
+    processList[0].kill()
 
 #---------------------------------------------------------------#
 # This function removes path prefix from file name and then is  #
@@ -65,13 +78,141 @@ def setList():
         remove_prefix(x, prefix)
 
 #---------------------------------------------------------------#
-# Function behaves as name would suggest.                       #
+# This function gets the paths of all songs. It initializes     #
+# a list that's used for playing audio files.                   #
 # Parameters:                                                   #
-# processList - list of current processes.                      #
+# file - list of raw file paths                                 #
+#                                                               #
+# wheight - height of subwindow                                 #
+#                                                               #
+# playList - list that's used for playing audio files.          #
+#                                                               #
+# page - current location in multi-dimensional list.            #
 #---------------------------------------------------------------#
-def stopPlaying(processList):
+def getPlaylist(file, wheight, playList, page):         
+    filePlaceHolder = 0
+    while(1):
     
-    processList[0].kill()
+        holdFile = []
+    
+        for x in range(0, wheight - 2):     # Adds items to a hold list
+        
+            holdFile.append(file[filePlaceHolder]) 
+            filePlaceHolder += 1
+
+            if filePlaceHolder == len(file):
+                break
+    
+        playList.append(holdFile)           # Adds hold list to another list
+        page += 1
+
+        if filePlaceHolder == len(file):
+            break
+
+#---------------------------------------------------------------#
+# This function moves the file names of all imported songs      #
+# into a multidimensional list.                                 #
+# Parameters:                                                   #
+#                                                               #
+# files - list of file names with full path stripped off        #
+#                                                               #
+# whight - height of subwindow                                  #
+#                                                               #
+# multiList - multi-dememsional list containing song names by   #
+# by page number.                                               #
+#                                                               #
+# page - current location in multi-dimensional list.            #
+#---------------------------------------------------------------#
+
+def getList(files, wheight, multiList, page):
+    filePlaceHolder = 0
+    while(1):
+    
+        holdFile = []                # Adds items to a hold list
+    
+        for x in range(0, wheight - 2):
+        
+            holdFile.append(files[filePlaceHolder])
+            filePlaceHolder += 1
+
+            if filePlaceHolder == len(file):
+                break
+    
+        multiList.append(holdFile)  # Adds hold list to another list
+        page += 1
+
+        if filePlaceHolder == len(files):
+            break
+
+#---------------------------------------------------------------#
+# This function clears the screen for the next page to be       #
+# displayed.                                                    #
+# Parameters:                                                   #
+#                                                               #
+# window - The current window object used.                      #
+#                                                               #
+# multiList - multi-dememsional list containing song names by   #
+# by page number.                                               #
+#                                                               #
+# whight - height of subwindow                                  #
+#                                                               #
+# wwidth - width of the subwindow                               #
+#                                                               #
+# row - The current location of the cursor.                     #
+#---------------------------------------------------------------#
+def clearLine(window, multiList, wheight, wwidth, row):
+    
+    window.move(0,0)
+
+    for i in range(0, wheight - 1):
+        
+        for x in range(0, wwidth - 1):
+            
+            window.addstr(" ")
+
+        row = row + 1
+        window.move(row, 0)
+
+    row = 0
+    window.move(row,0)
+
+#---------------------------------------------------------------#
+# Function reprints selected row with highlighted text          #
+#                                                               #
+# Parameters:                                                   #
+# row - The current location of the cursor.                     #
+#                                                               #
+# window - The current window object used.                      #
+#                                                               #
+# multiList - multi-dememsional list containing song names by   #
+# by page number.                                               #
+#                                                               #
+# page - current location in multi-dimensional list.            #
+#---------------------------------------------------------------#
+def rowSelection(row, window, multiList, page):                  
+
+    text = multiList[page][row]                             # Line to reprint
+    window.addnstr(text, len(text), curses.color_pair(1))   # Reprint line with highlight
+    window.move(row, 0)                                     # Moves cursor back to beginning of line
+
+#---------------------------------------------------------------#
+# Function reprints selected without highlighted text           #
+#                                                               #
+# Parameters:                                                   #
+# row - The current location of the cursor.                     #
+#                                                               #
+# window - The current window object used.                      #
+#                                                               #
+# multiList - multi-dememsional list containing song names by   #
+# by page number.                                               #
+#                                                               #
+# page - current location in multi-dimensional list.            #
+#---------------------------------------------------------------#
+def rowDeselection(row, window, multiList, page):
+
+    text = multiList[page][row]                 # Line to reprint
+    window.addnstr(text, len(text))             # Reprint line with highlight
+    window.move(row, 0)                         # Moves cursor back to beginning of line
 
 #---------------------------------------------------------------#
 # Function "beginConsole" creates an infinite loop. This loop   #
@@ -85,8 +226,19 @@ def stopPlaying(processList):
 #             running.                                          #
 #                                                               #
 # window - the current window object used.                      #
+#                                                               #
+# whight - height of subwindow                                  #
+#                                                               #
+# wwidth - width of the subwindow                               #
+#                                                               #
+# multiList - multi-dememsional list containing song names by   #
+# by page number.                                               #
+#                                                               #
+# page - current location in multi-dimensional list.            #
 #---------------------------------------------------------------#
-def beginConsole(row, isRunning, window):
+def beginConsole(row, isRunning, window, wheight, wwidth, multiList, page):
+    
+    getPlaylist(file, wheight, playList, page)
     
     processList = ['']          # Initializing a list to hold active processes
     
@@ -97,23 +249,43 @@ def beginConsole(row, isRunning, window):
         
         c = window.getch()      # Receive user input
 
-        if c == curses.KEY_DOWN and row < len(files) - 1: # Check to keep user from moving curser past options
+        if c == curses.KEY_DOWN and row < len(multiList[page]) - 1: # Check to keep user from moving curser past options
 
-            rowDeselection(row, window)                   
+            rowDeselection(row, window, multiList, page)                   
             row = row + 1                                 # New position of curser
             window.move(row, 0)                           # Move position of curser down
-            rowSelection(row, window)
+            rowSelection(row, window, multiList, page)
             window.refresh()                              # Refresh screen
             checkRow = row - 1                            # Previous position of cursor
 
         elif c == curses.KEY_UP and row > 0:              # Check to keep user from moving curser past options
 
-            rowDeselection(row, window)
+            rowDeselection(row, window, multiList, page)
             row = row - 1
             window.move(row, 0)
-            rowSelection(row, window)
+            rowSelection(row, window, multiList, page)
             window.refresh()
             checkRow = row + 1
+
+        elif c == curses.KEY_RIGHT and page < len(multiList) - 1:
+            
+            page = page + 1                                # New page number
+            row = 0
+            clearLine(window, multiList, wheight, wwidth, row)  # Clears screen
+            printOptions(row, window, wheight, wwidth, page)    # Prints next page to screen
+            window.refresh()
+            row = 0
+            window.move(row, 0)
+        
+        elif c == curses.KEY_LEFT and page > 0:
+
+            page = page - 1
+            row = 0
+            clearLine(window, multiList, wheight, wwidth, row)
+            printOptions(row, window, wheight, wwidth, page)
+            window.refresh()
+            row = 0
+            window.move(row, 0)
         
         elif c == ord(' '):                               # Condition for detection of spacebar
 
@@ -122,11 +294,11 @@ def beginConsole(row, isRunning, window):
                 isRunning = False
 
                 if checkRow != row:                       # If curser is on a new line play song
-                    playSong(row, processList)            # that is currently selected.
+                    playSong(row, processList, page)            # that is currently selected.
                     isRunning = True
 
             else:                                         # If no process is running play song
-                playSong(row, processList)
+                playSong(row, processList, page)
                 isRunning = True
         
             checkRow = row
@@ -135,7 +307,6 @@ def beginConsole(row, isRunning, window):
             newProc = subprocess.Popen(['killall', 'afplay'])   # Kill all processes
             break                                               # Break from loop for termination 
                                                                 # of program.
-            
 #---------------------------------------------------------------#
 # Function prints options from list to screen for user          #
 # selection.                                                    #
@@ -143,77 +314,50 @@ def beginConsole(row, isRunning, window):
 # Parameters:                                                   #
 # row - The current location of cursor.                         #
 #                                                               #
-# height - height of window.                                    #
-#                                                               #
-# width - width of the window                                   #
-#                                                               #
 # window - the current window object used                       #
-#---------------------------------------------------------------#
-def printOptions(row, height, width, window):
-    
-    counter = 0
-    for i in range(0, height):            # prints until bottom of screen is reached
-        
-        if i == len(files):               # If all files are printed to the screen
-            break                         # then break out of loop
+#                                                               #
+# wheight - height of the subwindow.                            #
+#                                                               #
+# wwidth - width of the subwindow                               #
+#                                                               #
+# page - current location in multi-dimensional list.            #
+#---------------------------------------------------------------#  
+def printOptions(row, window, wheight, wwidth, page):
 
-        if row == 0:                                       
-                                                           
-            window.addstr(files[i], curses.color_pair(1))  # Highlights first option                            
-            row = row + 1                                  
+    for x in range(0, len(multiList[page])):
+        
+        if x == len(multiList[page]) or row == wheight - 1:  # Terminates printing if end of screen
+            break                                            # or end of list is reached
+        
+        if row == 0:    # Highlights first option on screen
+            window.addstr(multiList[page][x], curses.color_pair(1))
+            row = row + 1
             window.move(row, 0)
 
         else:
             
-            window.addstr(files[i])                 #
-            row = row + 1                           # Prints rest of list
-            window.move(row, 0)                     #
+            window.addstr(multiList[page][x])
+            row = row + 1
+            window.move(row, 0)
 
-    window.move(height - 3, 0)                      # Moves cursor to bottom of the screen
-    window.addstr(message, curses.color_pair(2))    # Adds instructions with blue highlight
-    
+    fullMessage = "Page: " + str(page + 1) + space + message
+    window.move(wheight - 2, 0)                      # Moves cursor to bottom of the screen
+    window.addstr(fullMessage, curses.color_pair(2)) # Adds instructions with blue highlight
 
-    for i in range(len(message), width - 2):        # adds color to remaining spaces of the line
+    for i in range(len(message), wwidth - 12):       # adds color to remaining spaces of the line
         window.addstr(" ", curses.color_pair(2))
 
-    window.move(0, 0)                               # Move cursor to the top
+    window.move(0, 0)                                # Move cursor to the top
 
-#---------------------------------------------------------------#
-# Function reprints selected row with highlighted text          #
-#                                                               #
-# Parameters:                                                   #
-# row - The current location of the cursor.                     #
-#                                                               #
-# window - The current window object used.                      #
-#---------------------------------------------------------------#
-def rowSelection(row, window):                  
-
-    text = files[row]                                       # Line to reprint
-    window.addnstr(text, len(text), curses.color_pair(1))   # Reprint line with highlight
-    window.move(row, 0)                                     # Moves cursor back to beginning of line
-
-#---------------------------------------------------------------#
-# Function reprints selected without highlighted text           #
-#                                                               #
-# Parameters:                                                   #
-# row - The current location of the cursor.                     #
-#                                                               #
-# window - The current window object used.                      #
-#---------------------------------------------------------------#
-def rowDeselection(row, window):
-    # Function reprints previously selected row with normal color
-
-    text = files[row]                           # Line to reprint
-    window.addnstr(text, len(text))             # Reprint line with highlight
-    window.move(row, 0)                         # Moves cursor back to beginning of line
 
 #---------------------------------------------------------------#
 # Do you really need to know what this function does?           #
 #---------------------------------------------------------------#
 def main():  
     
+    page = 0  
     row = 0
-    setList()
+    setList()                       
     stdscr = curses.initscr()           # Begin curses window
     curses.noecho()                     #
     stdscr.idlok(True)                  # Use hardware line editing facilities.
@@ -221,6 +365,7 @@ def main():
     window = stdscr.subwin(height-1, width-1, 1, 1) # Create subscreen
     window.scrollok(True)
     stdscr.border(0)            # Create border around subscreen.
+    wheight, wwidth = window.getmaxyx()
     
                                 
     curses.curs_set(0)          # Set cursor visibility to False
@@ -233,12 +378,13 @@ def main():
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE) # Color pair 1 for selection highlighting
     curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE)  # Color pair 2 for instruction bar
 
-    printOptions(row, height, width, window)   # Prints selection options
-   
+    getList(files, wheight, multiList, page)    # Get list of options to print on screen
+    printOptions(row, window, wheight, wwidth, page) # Display options on screen
+
     row = 0
     window.move(row, 0)         # Sets cursor position to (0,0)
     stdscr.refresh()            # Refreshes screen to print changes
-    beginConsole(row, isRunning, window)   # Begin user input
+    beginConsole(row, isRunning, window, wheight, wwidth, multiList, page)   # Begin user input
 
     curses.nocbreak()           #
     stdscr.keypad(0)            # End curses and terminate program
