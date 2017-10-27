@@ -4,10 +4,10 @@
 * Play/Stop
 * Selection Highlighting
 * Loading of file names to screen
+* Scrolling / Loading more options than can fit on screen
 
 ## What doesn't work
 * Pause
-* Scrolling / Loading more options than can fit on screen
 * Gathering songs from multiple directories
 
 ## Dependencies
