@@ -44,6 +44,8 @@ prefix = '/Users/drewjohnson/desktop/songs/
 ```
 This should be the same as line 17 but without the asterisk at the end. This line of code is used to match what we need to remove from the file names before we display them to the user.
 
+## Important to know
+- Your terminal window will need to be at least 84 spaces wide for the window to be displayed correctly. It may need to be longer depending on the length of the song titles you import. 
 ## Contact
 If you have any questions or have improved my console player in any way be sure to contact me so we can talk about it!
 drew.m.johnson2@gmail.com
