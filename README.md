@@ -1,5 +1,6 @@
 # Console MP3 Player
-
+![alt text](https://github.com/drewjohnson2/console-player/blob/master/DemoImages/1.png)
+![alt text](https://github.com/drewjohnson2/console-player/blob/master/DemoImages/2.png)
 ## What works
 * Play/Stop
 * Selection Highlighting
